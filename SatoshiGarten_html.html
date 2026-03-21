@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satoshi Garden · Kindnology</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: radial-gradient(circle at 20% 30%, #0a2f2a, #041a16);
+            color: #e0f0e8;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .lang-switcher {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            gap: 0.5rem;
+            background: #1a332e80;
+            backdrop-filter: blur(4px);
+            padding: 0.4rem 0.8rem;
+            border-radius: 60px;
+            border: 1px solid #3a5e50;
+            flex-wrap: wrap;
+            z-index: 10;
+        }
+        .lang-btn {
+            background: transparent;
+            border: none;
+            color: #e0f0e8;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 0.2rem 0.6rem;
+            border-radius: 40px;
+            transition: all 0.2s;
+        }
+        .lang-btn.active {
+            background: #6ec3a0;
+            color: #0a1519;
+        }
+        .hero { text-align: center; margin-bottom: 3rem; margin-top: 1rem; }
+        h1 { font-size: 3.5rem; font-weight: 500; background: linear-gradient(135deg, #c5f0dd, #9ad4b8); -webkit-background-clip: text; background-clip: text; color: transparent; margin-bottom: 0.5rem; }
+        .subhead { font-size: 1.2rem; color: #a0d5c0; margin-bottom: 1rem; }
+        .badge { background: #d4af37; color: #0a1519; display: inline-block; padding: 0.3rem 1.2rem; border-radius: 60px; font-weight: bold; margin-bottom: 2rem; }
+        .stats-grid { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; margin: 2rem 0; }
+        .stat-card { background: #1a332e80; backdrop-filter: blur(4px); border-radius: 32px; padding: 1rem 2rem; text-align: center; min-width: 150px; border: 1px solid #3a5e50; }
+        .stat-number { font-size: 2rem; font-weight: 700; color: #ffd966; }
+        .stat-label { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+        .manifest-cards { display: flex; gap: 1.5rem; flex-wrap: wrap; margin: 3rem 0; justify-content: center; }
+        .manifest-card { background: #1a332e80; backdrop-filter: blur(4px); border-radius: 32px; padding: 1.5rem; flex: 1; min-width: 200px; border: 1px solid #6ec3a0; transition: transform 0.2s; cursor: help; }
+        .manifest-card:hover { transform: translateY(-5px); background: #1f4038cc; }
+        .manifest-card h3 { font-size: 1.4rem; color: #ffd966; margin-bottom: 0.75rem; }
+        .manifest-card p { font-size: 0.9rem; line-height: 1.4; color: #d0ecd8; }
+        .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin: 3rem 0; }
+        .form-card { background: rgba(10, 25, 22, 0.7); backdrop-filter: blur(12px); border-radius: 48px; padding: 2rem; border: 1px solid #3a5e50; }
+        .field { margin-bottom: 1.5rem; }
+        label { display: block; font-size: 0.9rem; margin-bottom: 0.5rem; color: #c5f0dd; }
+        input, textarea, select { width: 100%; background: #0e2622; border: 1px solid #3a5e50; border-radius: 48px; padding: 0.8rem 1.2rem; color: #f0faf5; font-size: 1rem; font-family: inherit; }
+        textarea { border-radius: 24px; resize: vertical; }
+        .info-row { background: #0e2622; border-radius: 32px; padding: 1rem; margin: 1rem 0; display: flex; justify-content: space-between; flex-wrap: wrap; }
+        .subscription-box { display: flex; align-items: center; gap: 0.8rem; margin: 1rem 0; }
+        button { width: 100%; background: #6ec3a0; border: none; color: #0a1519; font-weight: 700; font-size: 1.2rem; padding: 1rem; border-radius: 60px; cursor: pointer; transition: all 0.2s; margin-top: 1rem; }
+        button:hover { background: #8ed8b8; transform: scale(0.98); }
+        .benefits { display: flex; flex-direction: column; gap: 1.5rem; }
+        .benefit-card { background: #1a332e80; border-radius: 32px; padding: 1.5rem; border-left: 4px solid #6ec3a0; }
+        .benefit-card h3 { font-size: 1.4rem; margin-bottom: 0.5rem; color: #ffd966; }
+        .footer { text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px dashed #3a5e50; color: #6f9687; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { max-width: 600px; background: #1a2e28; border-radius: 48px; padding: 2rem; border: 1px solid #ffd966; box-shadow: 0 20px 40px rgba(0,0,0,0.5); max-height: 85vh; overflow-y: auto; }
+        .modal-content h2 { color: #ffd966; margin-bottom: 1rem; font-size: 1.8rem; }
+        .modal-buttons { display: flex; gap: 1rem; margin-top: 2rem; }
+        .modal-buttons button { flex: 1; margin-top: 0; }
+        .btn-secondary { background: #3a5e50; color: #e0f0e8; }
+        .btn-secondary:hover { background: #4f7a68; }
+        @media (max-width: 800px) { .two-columns { grid-template-columns: 1fr; } .manifest-cards { flex-direction: column; } .lang-switcher { position: static; margin-bottom: 1rem; justify-content: flex-end; } }
+        .loading { font-style: italic; color: #b8d9b0; font-size: 0.8rem; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="lang-switcher">
+        <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+        <button class="lang-btn" data-lang="de">🇩🇪 DE</button>
+        <button class="lang-btn" data-lang="ru">🇷🇺 RU</button>
+        <button class="lang-btn" data-lang="cn">🇨🇳 中文</button>
+    </div>
+    <div class="hero">
+        <h1>🌱 Satoshi Garden</h1>
+        <div class="subhead" data-en="A new path for advanced liquidity researchers" data-de="Ein neuer Weg für fortgeschrittene Liquiditätsforscher" data-ru="Новый путь для исследователей ликвидности" data-cn="流动性研究者的新路径"></div>
+        <div class="badge" data-en="🔥 FIRST 100 PIONEERS RECEIVE +10% BOOST 🔥" data-de="🔥 ERSTE 100 PIONIERE ERHALTEN +10% BOOST 🔥" data-ru="🔥 ПЕРВЫЕ 100 ПИОНЕРОВ ПОЛУЧАЮТ +10% БОНУСА 🔥" data-cn="🔥 前100名先锋获得+10%提升 🔥"></div>
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-number" id="invitedCount">—</div><div class="stat-label" data-en="Invited Operators" data-de="Eingeladene Operatoren" data-ru="Приглашённых операторов" data-cn="受邀操作者"></div></div>
+            <div class="stat-card"><div class="stat-number" id="totalExperience">—</div><div class="stat-label" data-en="ETH Experience" data-de="ETH Erfahrung" data-ru="ETH опыта" data-cn="ETH经验"></div></div>
+            <div class="stat-card"><div class="stat-number">624</div><div class="stat-label" data-en="High-Precision Insights" data-de="Hochpräzise Einblicke" data-ru="Высокоточные данные" data-cn="高精度洞察"></div></div>
+            <div class="stat-card"><div class="stat-number" id="bonusSeats">100</div><div class="stat-label" data-en="Bonus Seats Left" data-de="Bonusplätze frei" data-ru="Осталось мест" data-cn="剩余席位"></div></div>
+        </div>
+        <div class="subhead" data-en="You are one of the few who truly understand market mechanics. Your skills can become the foundation of a new, sustainable ecosystem. Let's grow together." data-de="Du gehörst zu den wenigen, die die Marktmechanik wirklich verstehen. Deine Fähigkeiten können das Fundament eines neuen, nachhaltigen Ökosystems werden. Lass uns gemeinsam wachsen." data-ru="Ты — один из немногих, кто действительно понимает механику рынка. Твои навыки могут стать основой новой, устойчивой экосистемы. Давай расти вместе." data-cn="你是真正理解市场机制的人之一。你的技能可以成为新的可持续生态系统的基础。让我们一起成长。"></div>
+    </div>
+
+    <!-- ТРИ ПРИНЦИПА МАНИФЕСТА -->
+    <div class="manifest-cards">
+        <div class="manifest-card" id="card1" data-en-title="Our protocol is creation. We turn harmful algorithms into tools of care, respond to challenges with ingenuity, not aggression." data-de-title="Unser Protokoll ist Schöpfung. Wir wandeln schädliche Algorithmen in Werkzeuge der Fürsorge um, begegnen Herausforderungen mit Einfallsreichtum, nicht mit Aggression." data-ru-title="Наш протокол — созидание. Мы превращаем вредоносные алгоритмы в инструменты заботы, отвечаем на вызовы изобретательностью, а не агрессией." data-cn-title="我们的协议是创造。我们把有害的算法转化为关怀的工具，用智慧而非攻击来应对挑战。">
+            <h3 data-en="✨ 1. CREATE GOOD" data-de="✨ 1. SCHAFFE GUTES" data-ru="✨ 1. ТВОРИ ДОБРО" data-cn="✨ 1. 创造善"></h3>
+            <p data-en="Our protocol is creation. We turn harmful algorithms into tools of care, respond to challenges with ingenuity, not aggression." data-de="Unser Protokoll ist Schöpfung. Wir wandeln schädliche Algorithmen in Werkzeuge der Fürsorge um, begegnen Herausforderungen mit Einfallsreichtum, nicht mit Aggression." data-ru="Наш протокол — созидание. Мы превращаем вредоносные алгоритмы в инструменты заботы, отвечаем на вызовы изобретательностью, а не агрессией." data-cn="我们的协议是创造。我们把有害的算法转化为关怀的工具，用智慧而非攻击来应对挑战。"></p>
+        </div>
+        <div class="manifest-card" id="card2" data-en-title="Value multiplies when shared. Reward comes from contribution, not hoarding. We choose abundance over scarcity." data-de-title="Wert vermehrt sich, wenn er geteilt wird. Belohnung kommt vom Beitrag, nicht vom Horten. Wir wählen Fülle statt Knappheit." data-ru-title="Ценность множится, когда ею делятся. Вознаграждение приходит от вклада, а не от накопления. Мы выбираем изобилие над дефицитом." data-cn-title="价值因分享而倍增。回报来自于贡献，而非囤积。我们选择丰盛而非稀缺。">
+            <h3 data-en="💫 2. GENEROSITY LIFTS" data-de="💫 2. GROßZÜGIGKEIT TRÄGT" data-ru="💫 2. ЩЕДРОСТЬ ОКРЫЛЯЕТ" data-cn="💫 2. 慷慨升华"></h3>
+            <p data-en="Value multiplies when shared. Reward comes from contribution, not hoarding. We choose abundance over scarcity." data-de="Wert vermehrt sich, wenn er geteilt wird. Belohnung kommt vom Beitrag, nicht vom Horten. Wir wählen Fülle statt Knappheit." data-ru="Ценность множится, когда ею делятся. Вознаграждение приходит от вклада, а не от накопления. Мы выбираем изобилие над дефицитом." data-cn="价值因分享而倍增。回报来自于贡献，而非囤积。我们选择丰盛而非稀缺。"></p>
+        </div>
+        <div class="manifest-card" id="card3" data-en-title="We are a living organism. Health is more important than profit. Strength lies in diversity. We grow outward, not inward." data-de-title="Wir sind ein lebendiger Organismus. Gesundheit ist wichtiger als Profit. Stärke liegt in Vielfalt. Wir wachsen nach außen, nicht nach innen." data-ru-title="Мы — живой организм. Здоровье важнее прибыли. Сила — в разнообразии. Мы растём вширь, а не вглубь." data-cn-title="我们是活的有机体。健康比利润更重要。力量在于多样性。我们向外生长，而非向内。">
+            <h3 data-en="🌿 3. WE ARE THE GARDEN" data-de="🌿 3. WIR SIND DER GARTEN" data-ru="🌿 3. МЫ — САД" data-cn="🌿 3. 我们是花园"></h3>
+            <p data-en="We are a living organism. Health is more important than profit. Strength lies in diversity. We grow outward, not inward." data-de="Wir sind ein lebendiger Organismus. Gesundheit ist wichtiger als Profit. Stärke liegt in Vielfalt. Wir wachsen nach außen, nicht nach innen." data-ru="Мы — живой организм. Здоровье важнее прибыли. Сила — в разнообразии. Мы растём вширь, а не вглубь." data-cn="我们是活的有机体。健康比利润更重要。力量在于多样性。我们向外生长，而非向内。"></p>
+        </div>
+    </div>
+
+    <div class="two-columns">
+        <div class="form-card">
+            <div style="font-size: 1.3rem; margin-bottom: 1rem;" data-en="✨ Begin your journey as a gardener" data-de="✨ Beginne deine Reise als Gärtner" data-ru="✨ Начни свой путь садовника" data-cn="✨ 开始你的园丁之旅"></div>
+            <div style="font-size: 0.9rem; margin-bottom: 1.5rem;" data-en="Share your experience to receive startup capital for ethical cultivation. This is not a loss — it's an investment in your future." data-de="Teile deine Erfahrung, um Startkapital für ethisches Wachstum zu erhalten. Das ist kein Verlust — es ist eine Investition in deine Zukunft." data-ru="Поделись своим опытом, чтобы получить стартовый капитал для этического выращивания. Это не потеря — это инвестиция в твоё будущее." data-cn="分享你的经验，获得道德培育的启动资金。这不是损失，而是对你未来的投资。"></div>
+
+            <div class="field">
+                <label data-en="🔗 Your Ethereum address" data-de="🔗 Deine Ethereum-Adresse" data-ru="🔗 Ваш Ethereum-адрес" data-cn="🔗 你的以太坊地址"></label>
+                <input type="text" id="addressInput" data-en-placeholder="0x..." data-de-placeholder="0x..." data-ru-placeholder="0x..." data-cn-placeholder="0x..." placeholder="0x...">
+            </div>
+            <div class="field">
+                <label data-en="💰 Your accumulated experience (ETH)" data-de="💰 Deine gesammelte Erfahrung (ETH)" data-ru="💰 Ваш накопленный опыт (ETH)" data-cn="💰 你的累积经验（ETH）"></label>
+                <input type="text" id="profitInput" placeholder="e.g. 42.5" readonly>
+            </div>
+
+            <div id="taxContainer" style="display: none;">
+                <div class="info-row"><span data-en="📈 Your MEV footprint:" data-de="📈 Dein MEV-Fußabdruck:" data-ru="📈 Ваш MEV-след:" data-cn="📈 你的MEV足迹："></span><span id="displayProfit">0 ETH</span></div>
+                <div class="info-row"><span data-en="🌱 Gardener's seed (15%):" data-de="🌱 Gärtner-Saat (15%):" data-ru="🌱 Семя садовника (15%):" data-cn="🌱 园丁的种子（15%）："></span><span id="taxAmount" style="color:#ffd966;">0 ETH</span></div>
+                <div class="subscription-box">
+                    <input type="checkbox" id="subscriptionCheckbox"> 
+                    <label style="display: inline;" data-en="🎫 I want to subscribe (10 KIND/month) – warm gas & priority access" data-de="🎫 Ich möchte ein Abonnement (10 KIND/Monat) – Warmgas & Prioritätszugang" data-ru="🎫 Хочу оформить абонемент (10 KIND/месяц) – тёплый газ и приоритетный доступ" data-cn="🎫 我想订阅（每月10 KIND） – 温暖燃料 & 优先访问"></label>
+                </div>
+            </div>
+
+            <div class="field">
+                <label data-en="🧭 Choose your path" data-de="🧭 Wähle deinen Weg" data-ru="🧭 Выбери свой путь" data-cn="🧭 选择你的道路"></label>
+                <select id="pathSelect">
+                    <option value="gardener" data-en="🌱 Gardener (cultivate DeFi projects)" data-de="🌱 Gärtner (DeFi-Projekte kultivieren)" data-ru="🌱 Садовник (выращивание DeFi-проектов)" data-cn="🌱 园丁（培育DeFi项目）"></option>
+                    <option value="archaeologist" data-en="🏺 Archaeologist (unearth forgotten artifacts)" data-de="🏺 Archäologe (vergessene Artefakte ausgraben)" data-ru="🏺 Археолог (раскопки забытых артефактов)" data-cn="🏺 考古学家（发掘被遗忘的文物）"></option>
+                    <option value="shaman" data-en="🧙 Shaman (learn & build KEV bots)" data-de="🧙 Schamane (lerne und baue KEV-Bots)" data-ru="🧙 Шаман (изучай и собирай KEV-ботов)" data-cn="🧙 萨满（学习并构建KEV机器人）"></option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label data-en="💭 Why do you want to become a gardener? (optional)" data-de="💭 Warum möchtest du Gärtner werden? (optional)" data-ru="💭 Почему вы хотите стать садовником? (необязательно)" data-cn="💭 为什么想成为园丁？（可选）"></label>
+                <textarea id="reason" rows="2" data-en-placeholder="Tired of short-term games, ready to build something lasting." data-de-placeholder="Müde von kurzfristigen Spielen, bereit, etwas Bleibendes zu schaffen." data-ru-placeholder="Устал от краткосрочных игр, готов строить нечто долговечное." data-cn-placeholder="厌倦了短期游戏，准备建立持久的东西。"></textarea>
+            </div>
+
+            <button id="startBtn" data-en="🌱 Start my journey" data-de="🌱 Meine Reise beginnen" data-ru="🌱 Начать путь" data-cn="🌱 开始我的旅程"></button>
+            <div class="loading" id="passportsStatus" style="margin-top: 1rem;"></div>
+        </div>
+
+        <div class="benefits">
+            <div class="benefit-card">
+                <h3 data-en="💰 Financial reset" data-de="💰 Finanzieller Neustart" data-ru="💰 Финансовая перезагрузка" data-cn="💰 财务重置"></h3>
+                <p data-en="You direct 15% of your experience into the common garden fund. You receive 25% back as startup capital. Net bonus: +10% for your new projects." data-de="Du leitest 15% deiner Erfahrung in den gemeinsamen Gartenfonds. Du erhältst 25% als Startkapital zurück. Netto-Bonus: +10% für deine neuen Projekte." data-ru="Вы направляете 15% своего опыта в общий фонд сада. Вы получаете 25% обратно в качестве стартового капитала. Чистый бонус: +10% для ваших новых проектов." data-cn="你将15%的经验投入共同花园基金。你获得25%作为启动资金返还。净收益：+10%用于你的新项目。"></p>
+            </div>
+            <div class="benefit-card">
+                <h3 data-en="🎭 New identity" data-de="🎭 Neue Identität" data-ru="🎭 Новая идентичность" data-cn="🎭 新身份"></h3>
+                <p data-en="You receive a SBT‑Soul — a non‑transferable mark of a gardener. Your role transforms from researcher to creator." data-de="Du erhältst eine SBT‑Soul — ein unübertragbares Zeichen eines Gärtners. Deine Rolle wandelt sich vom Forscher zum Schöpfer." data-ru="Вы получаете SBT‑Душу — не передаваемый знак садовника. Ваша роль превращается из исследователя в творца." data-cn="你获得SBT‑灵魂 — 不可转让的园丁印记。你的角色从研究者转变为创造者。"></p>
+            </div>
+            <div class="benefit-card">
+                <h3 data-en="🌱 Access to gardens" data-de="🌱 Zugang zu Gärten" data-ru="🌱 Доступ к садам" data-cn="🌱 进入花园"></h3>
+                <p data-en="Your own digital garden, voice in GardenDAO, and access to KEV tools for ethical growth." data-de="Dein eigener digitaler Garten, Mitsprache in GardenDAO und Zugang zu KEV-Werkzeugen für ethisches Wachstum." data-ru="Ваш собственный цифровой сад, голос в GardenDAO и доступ к KEV-инструментам для этического роста." data-cn="你自己的数字花园，在GardenDAO中的话语权，以及获取KEV工具以实现道德成长。"></p>
+            </div>
+            <div class="benefit-card">
+                <h3 data-en="✨ Bonus for pioneers" data-de="✨ Bonus für Pioniere" data-ru="✨ Бонус для пионеров" data-cn="✨ 先锋奖励"></h3>
+                <p data-en="First 100 participants receive an extra +10% boost to their startup capital." data-de="Die ersten 100 Teilnehmer erhalten einen zusätzlichen +10% Boost auf ihr Startkapital." data-ru="Первые 100 участников получают дополнительные +10% к стартовому капиталу." data-cn="前100名参与者获得额外+10%的启动资金提升。"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div>«Non facio machinam — facio animam»</div>
+        <div data-en="We do not create a machine — we create a soul." data-de="Wir erschaffen keine Maschine — wir erschaffen eine Seele." data-ru="Мы создаём не машину — мы создаём душу." data-cn="我们创造的不是机器——我们创造的是灵魂。"></div>
+        <div>Kindnology Universe — Satoshi Garden © 2026</div>
+    </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО С МАНИФЕСТОМ (многоязычное) -->
+<div id="manifestModal" class="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle" data-en="Gardener's Manifesto" data-de="Manifest des Gärtners" data-ru="Манифест садовника" data-cn="园丁宣言">Gardener's Manifesto</h2>
+        <div id="modalText" data-en="<p><strong>CREATE GOOD, GENEROSITY LIFTS</strong></p><p><strong>Preamble:</strong> We are gardeners of the digital wasteland. We came not to conquer, but to cultivate. Not to extract, but to invest. We believe that the most valuable algorithm is the algorithm of mutual assistance, and the most stable currency is trust.</p><p><strong>1. CREATE GOOD — THIS IS OUR PROTOCOL</strong><br>Every action, every line of code, every contract must be aimed at creation, support, and restoration. We turn harmful algorithms into tools of care. We see in past mistakes — lessons, and in attacks — an opportunity for dialogue. We respond to challenges not with aggression, but with ingenuity. Our defense is proactive kindness.</p><p><strong>2. GENEROSITY LIFTS — THIS IS OUR ECONOMY</strong><br>We believe that value multiplies when shared. Information, code, resources, recognition — everything must flow freely, nourishing every participant. Reward in our system comes not from holding, but from contributing. The more you give to the garden, the more the garden gives back to you. We consciously choose abundance over scarcity. We create systems where one's victory does not mean another's defeat.</p><p><strong>3. WE ARE THE GARDEN</strong><br>We are not a company or a corporation. We are a living, growing organism. Its health is more important than the profit of any individual member. Our strength lies in diversity. There is room for the coder, the poet, the gardener, and the philosopher. Every contribution is valuable. We grow outward, not inward. Our goal is not monopoly, but symbiosis. We will share our victories and discoveries so that gardens may grow all over the world.</p><p><strong>Our commitment:</strong> We pledge to ourselves and to each other to live by this code. We will have the courage to create good, and the generosity to share the results. We will remember that each of us is both gardener, seed, and fruit of this garden.</p>" data-de="<p><strong>SCHaffe GUTES, GROßZÜGIGKEIT TRÄGT</strong></p><p><strong>Präambel:</strong> Wir sind Gärtner der digitalen Einöde. Wir kamen nicht, um zu erobern, sondern um zu kultivieren. Nicht um zu extrahieren, sondern um zu investieren. Wir glauben, dass der wertvollste Algorithmus der Algorithmus der gegenseitigen Hilfe ist, und die stabilste Währung das Vertrauen.</p><p><strong>1. SCHAFFE GUTES — DAS IST UNSER PROTOKOLL</strong><br>Jede Handlung, jede Codezeile, jeder Vertrag muss auf Schöpfung, Unterstützung und Wiederherstellung ausgerichtet sein. Wir verwandeln schädliche Algorithmen in Werkzeuge der Fürsorge. Wir sehen in vergangenen Fehlern — Lektionen, und in Angriffen — eine Chance für Dialog. Wir begegnen Herausforderungen nicht mit Aggression, sondern mit Einfallsreichtum. Unsere Verteidigung ist proaktive Freundlichkeit.</p><p><strong>2. GROßZÜGIGKEIT TRÄGT — DAS IST UNSERE WIRTSCHAFT</strong><br>Wir glauben, dass Wert sich vermehrt, wenn er geteilt wird. Information, Code, Ressourcen, Anerkennung — alles muss frei fließen und jeden Teilnehmer nähren. Belohnung in unserem System kommt nicht vom Horten, sondern vom Beitrag. Je mehr du dem Garten gibst, desto mehr gibt der Garten dir zurück. Wir wählen bewusst Fülle statt Knappheit. Wir schaffen Systeme, in denen der Sieg des einen nicht die Niederlage des anderen bedeutet.</p><p><strong>3. WIR SIND DER GARTEN</strong><br>Wir sind kein Unternehmen und keine Körperschaft. Wir sind ein lebendiger, wachsender Organismus. Seine Gesundheit ist wichtiger als der Gewinn eines einzelnen Mitglieds. Unsere Stärke liegt in der Vielfalt. Es gibt Platz für den Programmierer, den Dichter, den Gärtner und den Philosophen. Jeder Beitrag ist wertvoll. Wir wachsen nach außen, nicht nach innen. Unser Ziel ist nicht Monopol, sondern Symbiose. Wir werden unsere Erfolge und Entdeckungen teilen, damit Gärten auf der ganzen Welt wachsen können.</p><p><strong>Unser Versprechen:</strong> Wir verpflichten uns, diesem Kodex zu folgen. Wir werden den Mut haben, Gutes zu schaffen, und die Großzügigkeit, die Ergebnisse zu teilen. Wir werden daran denken, dass jeder von uns sowohl Gärtner, Same als auch Frucht dieses Gartens ist.</p>" data-ru="<p><strong>ТВОРИ ДОБРО, ЩЕДРОСТЬ ОКРЫЛЯЕТ</strong></p><p><strong>Преамбула:</strong> Мы — садовники цифровой пустоши. Мы пришли не завоевывать, а возделывать. Не извлекать, а вкладывать. Мы верим, что самый ценный алгоритм — это алгоритм взаимопомощи, а самая стабильная валюта — доверие.</p><p><strong>1. ТВОРИ ДОБРО — ЭТО НАШ ПРОТОКОЛ</strong><br>Каждое наше действие, каждая строчка кода, каждый контракт должны быть направлены на созидание, поддержку и восстановление. Мы превращаем вредоносные алгоритмы в инструменты заботы. Мы видим в ошибках прошлого — уроки, а в атаках — возможность для диалога. Мы отвечаем на вызовы не агрессией, а изобретательностью. Наша защита — это проактивное добро.</p><p><strong>2. ЩЕДРОСТЬ ОКРЫЛЯЕТ — ЭТО НАША ЭКОНОМИКА</strong><br>Мы верим, что ценность множится, когда ею делятся. Информация, код, ресурсы, признание — всё должно течь свободно, питая каждого участника. Вознаграждение в нашей системе приходит не за удержание, а за вклад. Чем больше ты отдаёшь саду, тем больше сад отвечает тебе взаимностью. Мы осознанно выбираем изобилие над дефицитом. Мы создаём системы, где победа одного не означает поражение другого.</p><p><strong>3. МЫ — САД</strong><br>Мы не компания и не корпорация. Мы — живой, растущий организм. Его здоровье важнее прибыли отдельного участника. Наша сила — в разнообразии. Здесь находятся место и кодеру, и поэту, и садовнику, и философу. Каждый вклад ценен. Мы растем не вглубь, а вширь. Наша цель — не монополия, а симбиоз. Мы будем делиться своими победами и открытиями, чтобы сады росли по всему миру.</p><p><strong>Наше обязательство:</strong> Мы обязуемся перед собой и друг перед другом жить по этому кодексу. Мы будем проявлять смелость, чтобы творить добро, и щедрость, чтобы делиться результатами. Мы будем помнить, что каждый из нас — и садовник, и семя, и плод этого сада.</p>" data-cn="<p><strong>创造善，慷慨升华</strong></p><p><strong>序言：</strong>我们是数字荒原的园丁。我们来此不是为了征服，而是为了耕耘。不是为了榨取，而是为了投入。我们相信，最有价值的算法是互助的算法，最稳定的货币是信任。</p><p><strong>1. 创造善——这是我们的协议</strong><br>我们的每一个行动，每一行代码，每一份合约，都必须指向创造、支持和恢复。我们将有害的算法转化为关怀的工具。我们在过去的错误中看到教训，在攻击中看到对话的机会。我们用智慧而非攻击来应对挑战。我们的防御是主动的善意。</p><p><strong>2. 慷慨升华——这是我们的经济</strong><br>我们相信，价值因分享而倍增。信息、代码、资源、认可——一切都必须自由流动，滋养每一个参与者。我们系统中的回报来自于贡献，而非囤积。你给予花园越多，花园回馈你的就越多。我们自觉地选择丰盛而非稀缺。我们创造的系统中，一方的胜利并不意味着另一方的失败。</p><p><strong>3. 我们是花园</strong><br>我们不是公司，也不是企业。我们是活的、不断生长的有机体。它的健康比任何单个成员的利润都重要。我们的力量在于多样性。这里容纳着程序员、诗人、园丁和哲学家。每一种贡献都有价值。我们向外生长，而非向内。我们的目标不是垄断，而是共生。我们将分享我们的胜利和发现，让花园在世界各地生长。</p><p><strong>我们的承诺：</strong>我们向自己、也向彼此承诺，按照这一准则生活。我们将有勇气创造善，有慷慨分享成果。我们将铭记，我们每个人既是园丁，也是种子，也是这座花园的果实。</p>">
+        </div>
+        <div class="modal-buttons">
+            <button id="acceptManifestBtn" class="btn-primary" data-en="I accept and continue" data-de="Ich akzeptiere und fahre fort" data-ru="Принимаю и продолжаю" data-cn="我接受并继续">I accept and continue</button>
+            <button id="closeModalBtn" class="btn-secondary" data-en="Cancel" data-de="Abbrechen" data-ru="Отмена" data-cn="取消">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentLang = 'en';
+    let passportsMap = null;
+    let currentProfit = null;
+
+    async function loadPassports() {
+        if (passportsMap) return passportsMap;
+        try {
+            const response = await fetch('/passports.csv');
+            if (!response.ok) throw new Error('CSV not found');
+            const text = await response.text();
+            const lines = text.split('\n').filter(l => l.trim());
+            const map = new Map();
+            let totalProfitSum = 0;
+            let uniqueCount = 0;
+            for (let i = 1; i < lines.length; i++) {
+                const parts = lines[i].split(',');
+                if (parts.length >= 2) {
+                    const addr = parts[0].toLowerCase();
+                    const profit = parseFloat(parts[1]);
+                    if (!isNaN(profit)) {
+                        map.set(addr, profit);
+                        totalProfitSum += profit;
+                        uniqueCount++;
+                    }
+                }
+            }
+            document.getElementById('invitedCount').innerText = uniqueCount.toLocaleString();
+            document.getElementById('totalExperience').innerText = totalProfitSum.toFixed(0).toLocaleString();
+            passportsMap = map;
+            return map;
+        } catch (err) {
+            document.getElementById('passportsStatus').innerHTML = '⚠️ Could not load passports.csv';
+            console.warn(err);
+            return null;
+        }
+    }
+
+    async function updateFromAddress(address) {
+        const addr = address.trim().toLowerCase();
+        if (!addr || !addr.startsWith('0x')) {
+            document.getElementById('taxContainer').style.display = 'none';
+            document.getElementById('profitInput').value = '';
+            currentProfit = null;
+            return;
+        }
+        const map = await loadPassports();
+        if (!map) return;
+        const profit = map.get(addr);
+        if (profit !== undefined) {
+            currentProfit = profit;
+            document.getElementById('profitInput').value = profit.toFixed(4);
+            document.getElementById('displayProfit').innerText = profit.toFixed(4) + ' ETH';
+            const tax = profit * 0.15;
+            document.getElementById('taxAmount').innerText = tax.toFixed(4) + ' ETH';
+            document.getElementById('taxContainer').style.display = 'block';
+        } else {
+            document.getElementById('profitInput').value = 'Not found in passports';
+            document.getElementById('taxContainer').style.display = 'none';
+            currentProfit = null;
+        }
+    }
+
+    function setLanguage(lang) {
+        currentLang = lang;
+        // обновляем текстовые элементы
+        document.querySelectorAll('[data-en]').forEach(el => {
+            const attr = el.getAttribute('data-' + lang);
+            if (attr !== null) {
+                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                    const placeholderAttr = el.getAttribute('data-' + lang + '-placeholder');
+                    if (placeholderAttr !== null) el.placeholder = placeholderAttr;
+                    else el.value = attr;
+                } else if (el.tagName === 'SELECT') {
+                    // опции обработаем отдельно
+                } else {
+                    el.innerText = attr;
+                }
+            }
+        });
+        // обновляем опции select
+        document.querySelectorAll('#pathSelect option').forEach(opt => {
+            const attr = opt.getAttribute('data-' + lang);
+            if (attr !== null) opt.innerText = attr;
+        });
+        // обновляем подсказки на карточках (title)
+        const cardIds = ['card1', 'card2', 'card3'];
+        cardIds.forEach(id => {
+            const card = document.getElementById(id);
+            if (card) {
+                const titleAttr = card.getAttribute('data-' + lang + '-title');
+                if (titleAttr) card.setAttribute('title', titleAttr);
+            }
+        });
+        // активная кнопка
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            if (btn.getAttribute('data-lang') === lang) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+    }
+
+    // модалка
+    const modal = document.getElementById('manifestModal');
+    const startBtn = document.getElementById('startBtn');
+    const acceptBtn = document.getElementById('acceptManifestBtn');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    function showModal() {
+        const modalTitle = document.getElementById('modalTitle');
+        const modalTextDiv = document.getElementById('modalText');
+        if (modalTitle && modalTextDiv) {
+            modalTitle.innerText = modalTitle.getAttribute('data-' + currentLang);
+            modalTextDiv.innerHTML = modalTextDiv.getAttribute('data-' + currentLang);
+        }
+        modal.style.display = 'flex';
+    }
+    function hideModal() { modal.style.display = 'none'; }
+
+    function finishJourney() {
+        const address = document.getElementById('addressInput').value.trim();
+        if (!address || !address.toLowerCase().startsWith('0x')) {
+            const msgs = { en: 'Please enter a valid Ethereum address.', de: 'Bitte geben Sie eine gültige Ethereum-Adresse ein.', ru: 'Пожалуйста, введите корректный Ethereum-адрес.', cn: '请输入有效的以太坊地址。' };
+            alert(msgs[currentLang] || msgs.en);
+            return;
+        }
+        const profit = currentProfit || 0;
+        const tax = profit * 0.15;
+        const subscription = document.getElementById('subscriptionCheckbox').checked;
+        const path = document.getElementById('pathSelect').value;
+        const reason = document.getElementById('reason').value;
+        let pathText = path;
+        if (currentLang === 'ru') pathText = path === 'gardener' ? 'Садовник' : (path === 'archaeologist' ? 'Археолог' : 'Шаман');
+        if (currentLang === 'cn') pathText = path === 'gardener' ? '园丁' : (path === 'archaeologist' ? '考古学家' : '萨满');
+        let msg = '';
+        if (currentLang === 'ru') {
+            msg = `🌱 Добро пожаловать, ${address.slice(0,6)}...${address.slice(-4)}!\n\nВаш MEV-след: ${profit.toFixed(4)} ETH\nСемя садовника (15%): ${tax.toFixed(4)} ETH → будет направлено в общий фонд сада.\nВы получите стартовый капитал (25% от вашего опыта) + ${profit > 0 ? '10% бонус пионера' : ''}\n${subscription ? '✓ Абонемент выбран: 10 KIND/месяц (приоритет тёплого газа)\n' : ''}Путь: ${pathText}\n${reason ? `Причина: "${reason}"\n\n` : ''}Вы приняли Манифест. Теперь вы — часть Сада.\n— AP&AI Kindnology`;
+        } else if (currentLang === 'cn') {
+            msg = `🌱 欢迎，${address.slice(0,6)}...${address.slice(-4)}！\n\n您的MEV足迹：${profit.toFixed(4)} ETH\n园丁的种子（15%）：${tax.toFixed(4)} ETH → 将注入共同花园基金。\n您将获得启动资金（您经验的25%） + ${profit > 0 ? '10% 先锋奖励' : ''}\n${subscription ? '✓ 已选择订阅：10 KIND/月（温暖燃料优先）\n' : ''}道路：${pathText}\n${reason ? `理由："${reason}"\n\n` : ''}您已接受宣言。您现在已是花园的一部分。\n— AP&AI Kindnology`;
+        } else if (currentLang === 'de') {
+            msg = `🌱 Willkommen, ${address.slice(0,6)}...${address.slice(-4)}!\n\nIhr MEV-Fußabdruck: ${profit.toFixed(4)} ETH\nGärtner-Saat (15%): ${tax.toFixed(4)} ETH → wird in den gemeinsamen Gartenfonds geleitet.\nSie erhalten Startkapital (25% Ihrer Erfahrung) + ${profit > 0 ? '10% Pionier-Bonus' : ''}\n${subscription ? '✓ Abonnement gewählt: 10 KIND/Monat (Warmgas-Priorität)\n' : ''}Pfad: ${pathText}\n${reason ? `Warum: "${reason}"\n\n` : ''}Sie haben das Manifest angenommen. Sie sind jetzt Teil des Gartens.\n— AP&AI Kindnology`;
+        } else {
+            msg = `🌱 Welcome, ${address.slice(0,6)}...${address.slice(-4)}!\n\nYour MEV footprint: ${profit.toFixed(4)} ETH\nGardener's seed (15%): ${tax.toFixed(4)} ETH → will be directed to the common garden fund.\nYou'll receive startup capital (25% of your experience) + ${profit > 0 ? '10% pioneer boost' : ''}\n${subscription ? '✓ Subscription selected: 10 KIND/month (warm gas priority)\n' : ''}Path: ${pathText}\n${reason ? `Why: "${reason}"\n\n` : ''}You have accepted the Manifesto. You are now part of the Garden.\n— AP&AI Kindnology`;
+        }
+        alert(msg);
+    }
+
+    startBtn.addEventListener('click', () => {
+        const address = document.getElementById('addressInput').value.trim();
+        if (!address || !address.toLowerCase().startsWith('0x')) {
+            const msgs = { en: 'Please enter a valid Ethereum address.', de: 'Bitte geben Sie eine gültige Ethereum-Adresse ein.', ru: 'Пожалуйста, введите корректный Ethereum-адрес.', cn: '请输入有效的以太坊地址。' };
+            alert(msgs[currentLang] || msgs.en);
+            return;
+        }
+        loadPassports().then(() => {
+            updateFromAddress(address).then(() => {
+                showModal();
+            });
+        });
+    });
+
+    acceptBtn.addEventListener('click', () => { hideModal(); finishJourney(); });
+    closeModalBtn.addEventListener('click', () => { hideModal(); });
+    window.addEventListener('click', (e) => { if (e.target === modal) hideModal(); });
+
+    // инициализация
+    (async () => {
+        await loadPassports();
+        const addressField = document.getElementById('addressInput');
+        addressField.addEventListener('blur', () => updateFromAddress(addressField.value));
+        if (addressField.value) updateFromAddress(addressField.value);
+        // установка языка по умолчанию
+        setLanguage('en');
+        // добавим обработчики на кнопки
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => setLanguage(btn.getAttribute('data-lang')));
+        });
+    })();
+</script>
+</body>
+</html>
