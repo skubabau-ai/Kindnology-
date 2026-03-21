@@ -83,7 +83,43 @@
         @media (max-width: 800px) { .two-columns { grid-template-columns: 1fr; } .manifest-cards { flex-direction: column; } .lang-switcher { position: static; margin-bottom: 1rem; justify-content: flex-end; } }
         .loading { font-style: italic; color: #b8d9b0; font-size: 0.8rem; }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+<script src="common.js"></script>
+<script>
+    let currentProfit = null;
+
+    async function updateFromAddress(address) {
+        const addr = address.trim().toLowerCase();
+        if (!addr || !addr.startsWith('0x')) {
+            document.getElementById('taxContainer').style.display = 'none';
+            document.getElementById('profitInput').value = '';
+            currentProfit = null;
+            return;
+        }
+        const profit = await getProfit(addr);
+        if (profit !== null && profit !== undefined) {
+            currentProfit = profit;
+            document.getElementById('profitInput').value = profit.toFixed(4);
+            document.getElementById('displayProfit').innerText = profit.toFixed(4) + ' ETH';
+            const tax = profit * 0.15;
+            document.getElementById('taxAmount').innerText = tax.toFixed(4) + ' ETH';
+            document.getElementById('taxContainer').style.display = 'block';
+        } else {
+            document.getElementById('profitInput').value = 'Not found in passports';
+            document.getElementById('taxContainer').style.display = 'none';
+            currentProfit = null;
+        }
+    }
+
+    document.getElementById('addressInput').addEventListener('blur', function() {
+        updateFromAddress(this.value);
+    });
+
+    // если адрес уже вставлен при загрузке
+    if (document.getElementById('addressInput').value) {
+        updateFromAddress(document.getElementById('addressInput').value);
+    }
+</script>
 </head>
 <body>
 <div class="container">
