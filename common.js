@@ -1,117 +1,112 @@
-// ============================================
-// KINDNOLOGY COMMON FUNCTIONS (Wallet, Contracts)
-// ============================================
+// common.js — общий код для Kindnology портала
 
-let currentAccount = null;
-let provider = null;
-let signer = null;
+// ------------------- Web3 / MetaMask -------------------
+let currentLang = 'en';
 
-// Адрес контракта GardenEntrance (заменишь после деплоя)
-const GARDEN_CONTRACT = "0x0000000000000000000000000000000000000000";
-
-// Подключение кошелька
 async function connectWallet() {
-    if (!window.ethereum) {
-        alert("MetaMask is not installed. Please install it to continue.");
-        return;
-    }
-    try {
-        provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send("eth_requestAccounts", []);
-        signer = provider.getSigner();
-        currentAccount = await signer.getAddress();
-        
-        // Обновляем UI везде, где есть элементы с data-wallet
-        document.querySelectorAll("[data-wallet]").forEach(el => {
-            if (el.tagName === 'BUTTON') {
-                el.innerText = shortAddress(currentAccount);
-            } else {
-                el.innerText = currentAccount;
-            }
-        });
-        
-        console.log("Wallet connected:", currentAccount);
-        return currentAccount;
-    } catch (err) {
-        console.error("Connection failed:", err);
-        alert("Failed to connect wallet.");
+    if (typeof window.ethereum !== 'undefined') {
+        try {
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            return accounts[0];
+        } catch (error) {
+            console.error('User denied account access');
+            return null;
+        }
+    } else {
+        alert('MetaMask is not installed. Please install it to interact with the Garden.');
+        return null;
     }
 }
 
-// Отключение (просто сбрасываем переменные)
-function disconnectWallet() {
-    currentAccount = null;
-    provider = null;
-    signer = null;
-    document.querySelectorAll("[data-wallet]").forEach(el => {
-        if (el.tagName === 'BUTTON') {
-            el.innerText = "Connect Wallet";
-        } else {
-            el.innerText = "";
+// ------------------- Загрузка passports.csv -------------------
+let passportsMap = null;
+
+async function loadPassports() {
+    if (passportsMap) return passportsMap;
+    try {
+        const response = await fetch('/passports.csv');
+        if (!response.ok) throw new Error('CSV not found');
+        const text = await response.text();
+        const lines = text.split('\n').filter(l => l.trim());
+        const map = new Map();
+        let totalProfitSum = 0;
+        let uniqueCount = 0;
+        for (let i = 1; i < lines.length; i++) {
+            const parts = lines[i].split(',');
+            if (parts.length >= 2) {
+                const addr = parts[0].toLowerCase();
+                const profit = parseFloat(parts[1]);
+                if (!isNaN(profit)) {
+                    map.set(addr, profit);
+                    totalProfitSum += profit;
+                    uniqueCount++;
+                }
+            }
         }
+        // если есть элементы статистики на странице — обновляем их
+        if (document.getElementById('invitedCount')) {
+            document.getElementById('invitedCount').innerText = uniqueCount.toLocaleString();
+            document.getElementById('totalExperience').innerText = totalProfitSum.toFixed(0).toLocaleString();
+        }
+        passportsMap = map;
+        return map;
+    } catch (err) {
+        console.warn('Could not load passports.csv', err);
+        return null;
+    }
+}
+
+async function getProfit(address) {
+    const map = await loadPassports();
+    if (!map) return null;
+    const addr = address.toLowerCase();
+    return map.get(addr) || null;
+}
+
+// ------------------- Языковой переключатель -------------------
+function setLanguage(lang) {
+    currentLang = lang;
+    document.querySelectorAll('[data-en]').forEach(el => {
+        const attr = el.getAttribute('data-' + lang);
+        if (attr !== null) {
+            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                const placeholderAttr = el.getAttribute('data-' + lang + '-placeholder');
+                if (placeholderAttr !== null) el.placeholder = placeholderAttr;
+                else el.value = attr;
+            } else {
+                el.innerText = attr;
+            }
+        }
+    });
+    document.querySelectorAll('#pathSelect option').forEach(opt => {
+        const attr = opt.getAttribute('data-' + lang);
+        if (attr !== null) opt.innerText = attr;
+    });
+    // обновляем подсказки на карточках
+    const cardIds = ['card1', 'card2', 'card3'];
+    cardIds.forEach(id => {
+        const card = document.getElementById(id);
+        if (card) {
+            const titleAttr = card.getAttribute('data-' + lang + '-title');
+            if (titleAttr) card.setAttribute('title', titleAttr);
+        }
+    });
+    // активная кнопка
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+        if (btn.getAttribute('data-lang') === lang) btn.classList.add('active');
+        else btn.classList.remove('active');
     });
 }
 
-// Укороченный адрес для кнопки
-function shortAddress(addr) {
-    return addr.slice(0,6) + "..." + addr.slice(-4);
+// ------------------- I See You (заглушка для отправки токена) -------------------
+async function sendISeeYou(address) {
+    // В будущем здесь будет вызов смарт-контракта для отправки SBT или транзакции с данными
+    console.log(`Sending I See You to ${address}`);
+    alert(`✨ I See You token sent to ${address.slice(0,6)}...${address.slice(-4)}! Welcome to the Garden.`);
+    // Здесь можно добавить реальную отправку через ethers.js
 }
 
-// Проверка подключения
-function isWalletConnected() {
-    return !!currentAccount;
-}
-
-// Отправка 15% от опыта в контракт GardenEntrance
-async function sendFifteenPercent(experienceEth) {
-    if (!isWalletConnected()) {
-        alert("Please connect your wallet first.");
-        return false;
-    }
-    if (!experienceEth || experienceEth <= 0) {
-        alert("Invalid experience amount.");
-        return false;
-    }
-    const amountToSend = ethers.utils.parseEther((experienceEth * 0.15).toFixed(18));
-    
-    try {
-        // Временно, пока нет контракта, просто показываем информацию
-        alert(`You are about to send ${experienceEth * 0.15} ETH to the Garden. (Contract simulation)`);
-        console.log("Would send:", amountToSend.toString());
-        
-        // Когда контракт будет готов, раскомментируй:
-        // const contract = new ethers.Contract(GARDEN_CONTRACT, GARDEN_ABI, signer);
-        // const tx = await contract.enter({ value: amountToSend });
-        // await tx.wait();
-        // alert("Transaction confirmed! You are now a gardener.");
-        return true;
-    } catch (err) {
-        console.error("Transaction failed:", err);
-        alert("Transaction failed.");
-        return false;
-    }
-}
-
-// Загружаем passport.csv (если нужен на странице)
-async function loadPassport() {
-    try {
-        const response = await fetch('../passports.csv'); // путь относительно корня
-        const csvText = await response.text();
-        const lines = csvText.split('\n').filter(line => line.trim() !== '');
-        const headers = lines[0].split(',');
-        const passportData = {};
-        for (let i = 1; i < lines.length; i++) {
-            const cols = lines[i].split(',');
-            if (cols.length < 2) continue;
-            const addr = cols[0].trim().toLowerCase();
-            const profit = parseFloat(cols[1]);
-            if (addr && !isNaN(profit)) {
-                passportData[addr] = profit;
-            }
-        }
-        return passportData;
-    } catch (e) {
-        console.error('Failed to load passports.csv', e);
-        return {};
-    }
+// ------------------- Экспорт для использования в других скриптах (если нужно) -------------------
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { connectWallet, loadPassports, getProfit, setLanguage, sendISeeYou };
 }
